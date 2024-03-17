@@ -1,0 +1,130 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:messages
+
+
+info:
+    title: Kafka messages used in reefer shipping solution
+    version: 1.0.0
+    description: Descriptions of Kafka messages used
+    contact:
+        name: Dale Lane
+        url: https://reefershipping.com/infrastructure/kafka
+        email: dale.lane@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/shipping'
+    externalDocs:
+        url: https://ibm-cloud-architecture.github.io/refarch-kc/microservices/event-details/
+
+
+components:
+    messages:
+        newOrder:
+            name: newOrder
+            title: New order events
+            summary: Events about a new shipping request
+            description: |
+                Orders include information about the goods to be transferred,
+                including a description, but also shipping information.
+
+                For example, includes information about the transportation
+                requirements (e.g. if the goods require refridgeration, if the
+                goods are fragile, if the goods are sensitive to moisture, etc.)
+
+                It also includes information about the volume / space required
+                by the goods, to ensure enough container space is allocated.
+
+                Logistics information is also included, such as the date when
+                the goods are required at the destination port.
+            traits:
+                - $ref: '#/components/messageTraits/reeferCommonHeaders'
+            headers:
+                properties:
+                    com.reefer.orders.source:
+                        type: string
+                        description: Where the order originated
+                    com.reefer.orders.priority:
+                        type: string
+                        enum:
+                            - high
+                            - medium
+                            - low
+                        default: low
+            payload:
+                schemaFormat: 'application/vnd.apache.avro;version=1.9.0'
+                schema:
+                    $ref: http://reefer-apicurio-registry:8080/apis/registry/v2/groups/reefer-demo/artifacts/NewOrder
+            bindings:
+                kafka:
+                    schemaIdLocation: header
+                    schemaLookupStrategy: TopicRecordIdStrategy
+
+        scheduledVoyage:
+            name: scheduledVoyage
+            title: New scheduled voyage
+            summary: Shipping voyage has been scheduled
+            description: |
+                This includes information about the ports the ship will be sailing from
+                and to, the schedules for when it will be at sea, and the capacity of
+                the vessel expressed as the details of the containers that it will be
+                carrying.
+            traits:
+                - $ref: '#/components/messageTraits/reeferCommonHeaders'
+            bindings:
+                kafka:
+                    key:
+                        type: string
+                        description: |
+                            The voyage id, which is the primary key for the database table
+                            that is the source of these events, is used as the message key.
+                    schemaIdLocation: header
+                    schemaLookupStrategy: TopicRecordIdStrategy
+            payload:
+                schemaFormat: 'application/vnd.apache.avro;version=1.9.0'
+                schema:
+                    $ref: http://reefer-apicurio-registry:8080/apis/registry/v2/groups/reefer-demo/artifacts/ScheduledVoyage
+
+        containerAssignment:
+            name: containerAssignment
+            title: Container assignment notification
+            summary: A shipping order is assigned to containers on a scheduled voyage
+            description: |
+                These events are emitted when orders are assigned to a voyage.
+
+                The payload has intentionally been kept small, so consumers will need
+                to lookup information based on the IDs in the events. For example, the
+                source and destination ports for a voyage can be looked up from the
+                voyage id.
+            contentType: application/json
+            traits:
+                - $ref: '#/components/messageTraits/reeferCommonHeaders'
+            payload:
+                properties:
+                    orderid:
+                        type: string
+                        format: uuid
+                    assignmenttime:
+                        type: string
+                        format: dateTime
+                    voyageid:
+                        type: string
+                        format: uuid
+                    containerids:
+                        type: array
+                        items:
+                            type: number
+                required:
+                    - voyageid
+                    - orderid
+                    - assignmenttime
+                    - containerids
+
+
+    messageTraits:
+        reeferCommonHeaders:
+            headers:
+                properties:
+                    com.reefer.tracking:
+                        type: string
+                        format: uuid
+                        description: Internal header used for end-to-end message tracking
+

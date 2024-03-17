@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:common
+
+
+info:
+    title: Reusable definitions
+    version: 1.0.0
+
+
+components:
+    tags:
+        shipping:
+            name: shipping
+            description: Resources relating to shipping
+        containers:
+            name: containers
+            description: Resources relating to shipping containers
+        analytics:
+            name: analytics
+            description: Applications that include analytics
+        connectors:
+            name: connectors
+            description: Applications that act as connectors
+        flink:
+            name: flink
+            description: Applications implemented as Flink jobs
+        production:
+            name: production
+            description: Resources that are used in the production system

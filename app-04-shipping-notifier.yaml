@@ -1,0 +1,45 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:notifier:shipping
+
+
+info:
+    title: Shipping notifier
+    version: 1.0.0
+    description: |
+        Informs the staff at the ports about shipping order allocations
+        so that goods can be loaded onto the correct containers and transferred
+        to the appropriate ships in time for the voyage.
+
+        ![architectural diagram](./images/app-04.png)
+    contact:
+        name: Sara
+        url: https://reefershipping.com/infrastructure/allocations
+        email: sara@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/shipping'
+        - $ref: './common.yaml#/components/tags/containers'
+    externalDocs:
+        url: https://github.com/reefershipping/shipping-assignment-notifier
+
+
+operations:
+    processContainerAssignment:
+        title: Notify port logistics
+        summary: Notify port staff about an order assigned to a voyage
+        action: receive
+        description: |
+            An order has been assigned to a container on a voyage. The app will
+            notify the appropriate port staff so that the correct instructions
+            will be added to their work queue to move the goods to the needed
+            containers.
+        channel:
+            $ref: '#/channels/containers'
+        messages:
+            - $ref: './messages.yaml#/components/messages/containerAssignment'
+        security:
+            - $ref: './clusters.yaml#/components/securitySchemes/gatewayCredentials'
+
+
+channels:
+    containers:
+        $ref: './topics.yaml#/components/channels/containers'

@@ -1,0 +1,86 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:channels
+
+
+info:
+    title: Kafka topics used by the reefer shipping solution.
+    version: 1.0.0
+    description: Kafka topics that support the reefer container shipment system
+    contact:
+        name: Dale Lane
+        url: https://reefershipping.com/infrastructure/kafka
+        email: dale.lane@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/shipping'
+    externalDocs:
+        url: https://ibm-cloud-architecture.github.io/refarch-kc/microservices/topic-details/
+
+
+components:
+    channels:
+        orders:
+            address: ORDERS
+            title: New orders
+            description: |
+                This is probably the busiest topic in the overall Reefer Container
+                Shipment reference application. This topic would be the place for
+                any event that has to do with new orders for things that need to
+                be shipped. Orders can come from a variety of sources, including
+                business partners.
+            bindings:
+                kafka:
+                    partitions: 1
+                    replicas: 3
+                    topicConfiguration:
+                        max.message.bytes: 800000
+                        retention.ms: 2629746000
+                        retention.bytes: 1073741824
+            messages:
+                newOrder:
+                    $ref: './messages.yaml#/components/messages/newOrder'
+            servers:
+                - $ref: './clusters.yaml#/components/servers/production'
+                - $ref: './clusters.yaml#/components/servers/qa'
+
+        voyages:
+            address: VOYAGES
+            title: New voyage schedule notifications
+            description: |
+                This topic is used when there are changes to the voyages schedule.
+                The most common event on this topic is recording the scheduling
+                of a new voyage, however occasionally schedule changes can be
+                received.
+            bindings:
+                kafka:
+                    partitions: 3
+                    replicas: 3
+                    topicConfiguration:
+                        max.message.bytes: 1200000
+                        retention.ms: 3944619000
+                        retention.bytes: 2147483648
+            messages:
+                voyages:
+                    $ref: './messages.yaml#/components/messages/scheduledVoyage'
+            servers:
+                - $ref: './clusters.yaml#/components/servers/production'
+                - $ref: './clusters.yaml#/components/servers/qa'
+
+        containers:
+            address: CONTAINERS
+            title: New order assignments
+            description: |
+                This topic is used when an order is assigned to a container
+                on a voyage.
+            bindings:
+                kafka:
+                    partitions: 1
+                    replicas: 3
+                    topicConfiguration:
+                        max.message.bytes: 1000000
+                        retention.ms: 2103796800
+                        retention.bytes: 1000000000
+            servers:
+                - $ref: './clusters.yaml#/components/servers/production'
+            messages:
+                containers:
+                    $ref: './messages.yaml#/components/messages/containerAssignment'

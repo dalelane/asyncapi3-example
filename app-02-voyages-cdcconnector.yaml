@@ -1,0 +1,42 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:connector:voyages
+
+
+info:
+    title: Voyages database change data capture connector
+    version: 1.0.0
+    description: |
+        Emits events when voyages are scheduled. Implemented as a change data
+        capture connector attached to the shipping voyages database.
+
+        ![architectural diagram](./images/app-02.png)
+    contact:
+        name: Shen
+        url: https://reefershipping.com/infrastructure/voyagesrecs
+        email: shen@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/shipping'
+        - $ref: './common.yaml#/components/tags/connectors'
+    externalDocs:
+        url: https://github.com/debezium/debezium/tree/main/debezium-connector-postgres
+
+
+operations:
+    scheduleVoyage:
+        title: Voyage schedule change
+        summary: A change has been made to a voyage in the voyages database
+        action: send
+        description: |
+            Emits CDC events when voyage records are created or modified. When a
+            new shipping voyage is scheduled, this will be emitted as an event.
+        channel:
+            $ref: '#/channels/voyages'
+        messages:
+            - $ref: './messages.yaml#/components/messages/scheduledVoyage'
+        security:
+            - $ref: './clusters.yaml#/components/securitySchemes/gatewayCredentials'
+
+
+channels:
+    voyages:
+        $ref: './topics.yaml#/components/channels/voyages'

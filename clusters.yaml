@@ -1,0 +1,51 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:clusters
+
+
+info:
+    title: Kafka clusters
+    version: 1.0.0
+    description: |
+        Kafka clusters used by the reefer shipping solution.
+
+        These are run in the reefer Kubernetes clusters, and are operated and
+        monitored by the reefer shipping ops team.
+    contact:
+        name: Dale Lane
+        url: https://reefershipping.com/infrastructure/kafka
+        email: dale.lane@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/shipping'
+    externalDocs:
+        url: https://ibm-cloud-architecture.github.io/refarch-kc/infrastructure/required-services/#apache-kafka
+
+
+components:
+    servers:
+        production:
+            title: Production cluster
+            summary: This is the cluster that supports the production systems.
+            host: production.reefer-kafka-cluster:8092
+            protocol: kafka-secure
+            bindings:
+                kafka:
+                    schemaRegistryUrl: http://reefer-apicurio-registry:8080
+                    schemaRegistryVendor: apicurio
+        qa:
+            title: Test cluster
+            summary: Cluster available for app testing and quality assurance.
+            host: test.reefer-kafka-cluster:8092
+            protocol: kafka-secure
+            bindings:
+                kafka:
+                    schemaRegistryUrl: http://reefer-apicurio-registry:8080
+                    schemaRegistryVendor: apicurio
+
+    securitySchemes:
+        gatewayCredentials:
+            type: plain
+            description: |
+                SASL/PLAIN credentials for accessing topics can be created by
+                accessing the event endpoint management catalog at
+                https://reefershipping.com/apis/asyncapi/catalog
+

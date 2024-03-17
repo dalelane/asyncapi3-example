@@ -1,0 +1,43 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:connector:orders
+
+
+info:
+    title: Orders system source connector
+    version: 1.0.0
+    description: |
+        Emits events when new shipping orders are placed. It is implemented as a
+        Kafka Connect source connector.
+
+        ![architectural diagram](./images/app-01.png)
+    contact:
+        name: Andre
+        url: https://reefershipping.com/infrastructure/kafka
+        email: andre@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/connectors'
+        - $ref: './common.yaml#/components/tags/shipping'
+    externalDocs:
+        url: https://github.com/reefershipping/kafka-connect-orders-source-connector
+
+
+operations:
+    newOrderSubmitted:
+        title: New order event
+        summary: A new shipping order has been placed
+        action: send
+        description: |
+            Emits events when shipping orders are placed. Shipping orders are a
+            request to transport goods between ports, including a detailed
+            description of the goods that need to be shipped.
+        channel:
+            $ref: '#/channels/orders'
+        messages:
+            - $ref: './messages.yaml#/components/messages/newOrder'
+        security:
+            - $ref: './clusters.yaml#/components/securitySchemes/gatewayCredentials'
+
+
+channels:
+    orders:
+        $ref: './topics.yaml#/components/channels/orders'

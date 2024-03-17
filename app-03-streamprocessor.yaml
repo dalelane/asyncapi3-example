@@ -1,0 +1,91 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:streamprocessor:schedules
+
+
+info:
+    title: Shipping scheduler
+    version: 1.0.0
+    description: |
+        A stream processor that joins scheduled voyages with the orders of
+        goods that require shipping. It is implemented as a Flink job.
+
+        ![architectural diagram](./images/app-03.png)
+
+        The objective of the processor is to efficiently allocate the orders
+        to the optimum voyage, so that:
+        - ships are filled as much as possible without over-booking beyond the
+            capacity of the vessel
+        - goods arrive at destination ports by the requested date
+        - goods are assigned to containers that match the shipping requirements
+            (e.g. environmental limitations)
+
+        It emits events when an order has been assigned to a voyage.
+    contact:
+        name: Kevin
+        url: https://reefershipping.com/infrastructure/schedulers
+        email: kevin@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/flink'
+        - $ref: './common.yaml#/components/tags/containers'
+        - $ref: './common.yaml#/components/tags/shipping'
+    externalDocs:
+        url: https://github.com/reefershipping/flink-stream-processor-scheduler
+
+
+operations:
+    receiveOrders:
+        title: New order event
+        summary: A new shipping order has been received
+        action: receive
+        description: |
+            A new order has been received, describing a shipment of goods that
+            need to be transported between ports.
+        channel:
+            $ref: '#/channels/orders'
+        messages:
+            - $ref: './messages.yaml#/components/messages/newOrder'
+        security:
+            - $ref: './clusters.yaml#/components/securitySchemes/gatewayCredentials'
+
+    receiveVoyageSchedules:
+        title: New voyage event
+        summary: A new shipping voyage has been scheduled
+        action: receive
+        description: |
+            A new shipping voyage has been scheduled, and is available for
+            assigning shipping orders to.
+            Events will also include changes to already-scheduled voyages.
+        channel:
+            $ref: '#/channels/voyages'
+        messages:
+            - $ref: './messages.yaml#/components/messages/scheduledVoyage'
+        security:
+            - $ref: './clusters.yaml#/components/securitySchemes/gatewayCredentials'
+
+    submitContainerAssignment:
+        title: Container assignment event
+        summary: A shipping order has been assigned to a container on a voyage.
+        action: send
+        description: |
+            The stream processor emits events when it identifies the optimum
+            voyage for a shipping order.
+
+            Container assignments are not recorded in any other system, so the
+            intention is that related microservices should subscribe to these
+            events to fulfill the container assignments and notify any relevant
+            interested parties.
+        channel:
+            $ref: '#/channels/containers'
+        messages:
+            - $ref: './messages.yaml#/components/messages/containerAssignment'
+        security:
+            - $ref: './clusters.yaml#/components/securitySchemes/gatewayCredentials'
+
+
+channels:
+    orders:
+        $ref: './topics.yaml#/components/channels/orders'
+    voyages:
+        $ref: './topics.yaml#/components/channels/voyages'
+    containers:
+        $ref: './topics.yaml#/components/channels/containers'

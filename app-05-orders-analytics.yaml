@@ -1,0 +1,46 @@
+asyncapi: 3.0.0
+id: urn:reefershipping:com:infrastructure:kafka:analytics
+
+
+info:
+    title: Orders analytics
+    version: 1.0.0
+    description: |
+        Analyses orders that are placed to identify opportunities to optimize
+        reefer shipping logistics.
+
+        ![architectural diagram](./images/app-05.png)
+    contact:
+        name: Stewart
+        url: https://reefershipping.com/infrastructure/kafka/analytics
+        email: stewart@reefershipping.com
+    tags:
+        - $ref: './common.yaml#/components/tags/analytics'
+        - $ref: './common.yaml#/components/tags/shipping'
+    externalDocs:
+        url: https://github.com/reefershipping/shipping-orders-analytics
+
+
+operations:
+    analyzeOrder:
+        title: Analyze shipping order
+        summary: Analytics on shipping orders to identify improvements
+        action: receive
+        description: |
+            This application uses notifications about shipping orders that are
+            placed, to identify patterns that could inform future planning.
+
+            The results of this analytics app are used to optimize things like
+            voyage scheduling, container orders, port staffing levels, and
+            more.
+        channel:
+            $ref: '#/channels/orders'
+        messages:
+            - $ref: './messages.yaml#/components/messages/newOrder'
+        security:
+            - $ref: './clusters.yaml#/components/securitySchemes/gatewayCredentials'
+
+
+channels:
+    orders:
+        $ref: './topics.yaml#/components/channels/orders'
